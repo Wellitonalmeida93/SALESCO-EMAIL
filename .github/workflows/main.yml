@@ -2,29 +2,32 @@ name: Bot Relatorio PowerBI
 
 on:
   schedule:
-    - cron: '0 11 * * 1-5' # Roda de segunda a sexta às 08:00 (Horário de Brasília)
-  workflow_dispatch: # Ativa o botão de rodar manualmente
+    - cron: '0 11 * * 1-5' # Dispara sozinho de segunda a sexta às 08:00 (Horário de Brasília)
+  workflow_dispatch: # Mantém o botão de disparo manual ativo
 
 jobs:
   rodar-automacao:
     runs-on: ubuntu-latest
     
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true' # Garante conformidade com o Node 24
 
     steps:
-      - name: 1. Puxar arquivos do repositorio
+      - name: 1. Puxar código do repositório
         uses: actions/checkout@v4
 
-      - name: 2. Instalar o ambiente Python
+      - name: 2. Configurar o ambiente Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: 3. Instalar dependencias
-        run: pip install selenium
+      - name: 3. Instalar bibliotecas de código
+        run: pip install playwright
 
-      - name: 4. Executar o Script Python com Caixa-Preta
+      - name: 4. Instalar navegadores virtuais da nuvem
+        run: playwright install --with-deps chromium
+
+      - name: 5. Rodar Automação Online
         env:
-          SENHA_EMAIL: ${{ secrets.SENHA_EMAIL }}
+          SENHA_EMAIL: ${{ secrets.SENHA_EMAIL }} # injeta a senha de app do Gmail armazenada no cofre
         run: python relatorio_salesco.py
