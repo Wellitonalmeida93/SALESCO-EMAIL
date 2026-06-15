@@ -12,7 +12,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 # --- CONFIGURAÇÕES ---
-URL_POWER_BI = "https://app.powerbi.com/view?r=eyJrIjoiMjY0OWFhODQtYmU3Yy00NTE3LWIzZDYtZDY5MzUyNTlhYzRkIiwidCI6ImY0Y2Q4NWNjLWQ1YTAtNGVmZC04NzkzLThhNzg5NDE5MGNmYSJ9"
+URL_POWER_BI = "https://app.powerbi.com/view?r=eyJrIjoiMjY0OWFhODQtYmU3Yy00NTE3LWIzZDYtZGY5MzUyNTlhYzRkIiwidCI6ImY0Y2Q4NWNjLWQ1YTAtNGVmZC04NzkzLThhNzg5NDE5MGNmYSJ9"
 REMETENTE_EMAIL = "welliton.almeida@pizzattolog.com.br"
 REMETENTE_SENHA = os.environ.get("SENHA_EMAIL") 
 
@@ -28,12 +28,16 @@ def capturar_print_powerbi(url, caminho_saida):
     print("🤖 [DIAGNÓSTICO] Iniciando a rotina do Selenium...")
     
     chrome_options = Options()
-    chrome_options.add_argument("--headless=new")  
+    chrome_options.add_argument("--headless=new")  # Modo invisível moderno
     chrome_options.add_argument("--window-size=1600,1000") 
     chrome_options.add_argument("--force-device-scale-factor=1.2") 
+    
+    # --- CONFIGURAÇÕES CRÍTICAS PARA O GITHUB ACTIONS ---
     chrome_options.add_argument("--no-sandbox") 
     chrome_options.add_argument("--disable-dev-shm-usage") 
     chrome_options.add_argument("--disable-gpu") 
+    chrome_options.add_argument("--remote-debugging-port=9222") # Resolve o erro do DevToolsActivePort
+    # ----------------------------------------------------
 
     driver = None
     try:
@@ -41,7 +45,7 @@ def capturar_print_powerbi(url, caminho_saida):
         driver = webdriver.Chrome(options=chrome_options)
         print("✅ [DIAGNÓSTICO] Navegador iniciado com sucesso!")
         
-        print(f"⏳ [DIAGNÓSTICO] Acessando a URL do Power BI...")
+        print("⏳ [DIAGNÓSTICO] Acessando a URL do Power BI...")
         driver.get(url)
         
         print("⏳ [DIAGNÓSTICO] Aguardando 20 segundos para renderização dos gráficos...")
