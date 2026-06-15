@@ -9,7 +9,6 @@ from email.mime.image import MIMEImage
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
 
 # --- CONFIGURAÇÕES ---
 URL_POWER_BI = "https://app.powerbi.com/view?r=eyJrIjoiMjY0OWFhODQtYmU3Yy00NTE3LWIzZDYtZDY5MzUyNTlhYzRkIiwidCI6ImY0Y2Q4NWNjLWQ1YTAtNGVmZC04NzkzLThhNzg5NDE5MGNmYSJ9"
@@ -28,18 +27,18 @@ def capturar_print_powerbi(url, caminho_saida):
     print("🤖 Iniciando captura do Power BI...")
     
     chrome_options = Options()
-    chrome_options.add_argument("--headless=new")  # Modo invisível moderno e estável
+    chrome_options.add_argument("--headless=new")  # Modo invisível moderno
     chrome_options.add_argument("--window-size=1600,1000") 
     chrome_options.add_argument("--force-device-scale-factor=1.2") 
     chrome_options.add_argument("--no-sandbox") 
     chrome_options.add_argument("--disable-dev-shm-usage") 
-    chrome_options.add_argument("--disable-gpu")  # Desativa aceleração de hardware (essencial p/ nuvem)
+    chrome_options.add_argument("--disable-gpu") 
 
     try:
-        servico = Service(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=servico, options=chrome_options)
+        # No GitHub Actions, o Selenium localiza o Chrome automaticamente!
+        driver = webdriver.Chrome(options=chrome_options)
     except Exception as err_driver:
-        print(f"❌ Erro ao inicializar o Chrome/WebDriver: {err_driver}")
+        print(f"❌ Erro ao inicializar o Chrome: {err_driver}")
         return False
 
     try:
@@ -48,10 +47,10 @@ def capturar_print_powerbi(url, caminho_saida):
         time.sleep(20) 
         
         driver.save_screenshot(caminho_saida)
-        print(f"✅ Print salvo com sucesso em: {caminho_saida}")
+        print(f"✅ Print saved successfully at: {caminho_saida}")
         return True
     except Exception as e:
-        print(f"❌ Erro durante a navegação/captura: {e}")
+        print(f"❌ Erro durante a navegação: {e}")
         return False
     finally:
         try:
@@ -63,7 +62,7 @@ def enviar_email(caminho_imagem):
     print("📧 Preparando e-mail para envio...")
     
     if not REMETENTE_SENHA:
-        print("❌ Erro crítico: A variável secreta 'SENHA_EMAIL' está vazia ou não foi configurada no GitHub!")
+        print("❌ Erro: Variável 'SENHA_EMAIL' não encontrada!")
         return
 
     try:
@@ -82,7 +81,7 @@ def enviar_email(caminho_imagem):
             <p>Olá,<br><br>
                O relatório de abastecimento foi processado.<br>
                Confira abaixo o <b>Dashboard Salesco</b> atualizado:<br><br>
-               Acesse o painel interativo online: <a href="{URL_POWER_BI}">Clique Aqui</a><br><br>
+               Acesse online: <a href="{URL_POWER_BI}">Clique Aqui</a><br><br>
                <img src="cid:{cid_id}" width="1000" style="border: 1px solid #ddd;"><br><br> 
                Atenciosamente,<br>
             </p>
@@ -101,18 +100,15 @@ def enviar_email(caminho_imagem):
             server.login(REMETENTE_EMAIL, REMETENTE_SENHA)
             server.sendmail(REMETENTE_EMAIL, DESTINATARIOS, msg.as_string())
         
-        print("🚀 Relatório enviado com sucesso para todos os destinatários!")
+        print("🚀 Relatório enviado com sucesso!")
 
     except Exception as e:
-        print(f"❌ Erro ao enviar e-mail por SMTP: {e}")
+        print(f"❌ Erro no envio do e-mail: {e}")
 
 if __name__ == "__main__":
     pasta_atual = os.path.dirname(os.path.abspath(__file__))
     CADA_PRINT = os.path.join(pasta_atual, "print_salesco_auto.png")
 
     sucesso = capturar_print_powerbi(URL_POWER_BI, CADA_PRINT)
-    
     if sucesso:
         enviar_email(CADA_PRINT)
-    else:
-        print("🛑 Processo interrompido devido a falhas na captura da imagem.")
