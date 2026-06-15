@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true' # Força o ambiente moderno do Node 24
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
     steps:
       - name: 1. Puxar arquivos do repositorio
@@ -26,5 +26,5 @@ jobs:
 
       - name: 4. Executar o Script Python com Caixa-Preta
         env:
-          SENHA_EMAIL: ${{ secrets.SENHA_EMAIL }} # Puxa sua senha de app do Gmail salva no GitHub
+          SENHA_EMAIL: ${{ secrets.SENHA_EMAIL }}
         run: python relatorio_salesco.py
