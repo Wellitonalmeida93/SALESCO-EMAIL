@@ -12,7 +12,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 # --- CONFIGURAÇÕES ---
-URL_POWER_BI = "https://app.powerbi.com/view?r=eyJrIjoiMjY0OWFhODQtYmU3Yy00NTE3LWIzZDYtZGY5MzUyNTlhYzRkIiwidCI6ImY0Y2Q4NWNjLWQ1YTAtNGVmZC04NzkzLThhNzg5NDE5MGNmYSJ9"
+URL_POWER_BI = "https://app.powerbi.com/view?r=eyJrIjoiMjY0OWFhODQtYmU3Yy00NTE3LWIzZDYtZDY5MzUyNTlhYzRkIiwidCI6ImY0Y2Q4NWNjLWQ1YTAtNGVmZC04NzkzLThhNzg5NDE5MGNmYSJ9"
 REMETENTE_EMAIL = "welliton.almeida@pizzattolog.com.br"
 REMETENTE_SENHA = os.environ.get("SENHA_EMAIL") 
 
@@ -28,22 +28,23 @@ def capturar_print_powerbi(url, caminho_saida):
     print("🤖 [DIAGNÓSTICO] Iniciando a rotina do Selenium...")
     
     chrome_options = Options()
-    chrome_options.add_argument("--headless=new")  # Modo invisível moderno
+    
+    # 🎯 O PULO DO GATO: Força o uso do Chrome nativo e ultra-estável do próprio GitHub
+    chrome_options.binary_location = "/usr/bin/google-chrome"
+    
+    # Configurações padrão-ouro para estabilização em servidores Linux
+    chrome_options.add_argument("--headless")  # Modo invisível clássico e altamente compatível
+    chrome_options.add_argument("--no-sandbox") # Ignora restrições de segurança de usuário
+    chrome_options.add_argument("--disable-dev-shm-usage") # Usa o disco se faltar memória RAM dedicada
+    chrome_options.add_argument("--disable-gpu") # Desativa aceleração gráfica de hardware
     chrome_options.add_argument("--window-size=1600,1000") 
     chrome_options.add_argument("--force-device-scale-factor=1.2") 
-    
-    # --- CONFIGURAÇÕES CRÍTICAS PARA O GITHUB ACTIONS ---
-    chrome_options.add_argument("--no-sandbox") 
-    chrome_options.add_argument("--disable-dev-shm-usage") 
-    chrome_options.add_argument("--disable-gpu") 
-    chrome_options.add_argument("--remote-debugging-port=9222") # Resolve o erro do DevToolsActivePort
-    # ----------------------------------------------------
 
     driver = None
     try:
-        print("⏳ [DIAGNÓSTICO] Tentando instanciar o webdriver.Chrome()...")
+        print("⏳ [DIAGNÓSTICO] Tentando instanciar o webdriver com o Chrome do sistema...")
         driver = webdriver.Chrome(options=chrome_options)
-        print("✅ [DIAGNÓSTICO] Navegador iniciado com sucesso!")
+        print("✅ [DIAGNÓSTICO] Navegador estável iniciado com sucesso!")
         
         print("⏳ [DIAGNÓSTICO] Acessando a URL do Power BI...")
         driver.get(url)
@@ -71,7 +72,7 @@ def enviar_email(caminho_imagem):
     print("📧 [DIAGNÓSTICO] Iniciando rotina de e-mail...")
     
     if not REMETENTE_SENHA:
-        print("❌ [ERRO DE AMBIENTE] A chave 'SENHA_EMAIL' não foi mapeada ou está vazia no GitHub Secrets!")
+        print("❌ [ERRO DE AMBIENTE] A chave 'SENHA_EMAIL' não foi mapeada no GitHub Secrets!")
         return
 
     try:
