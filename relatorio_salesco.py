@@ -1,18 +1,17 @@
 import os
+import time
 import sys
 import traceback
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage 
-
-# Biblioteca de automação de nuvem da Microsoft
 from playwright.sync_api import sync_playwright
 
-# --- CONFIGURAÇÕES 100% ONLINE ---
-URL_POWER_BI = "https://app.powerbi.com/view?r=eyJrIjoiMjY0OWFhODQtYmU3Yy00NTE3LWIzZDYtZGY5MzUyNTlhYzRkIiwidCI6ImY0Y2Q4NWNjLWQ1YTAtNGVmZC04NzkzLThhNzg5NDE5MGNmYSJ9"
+# --- CONFIGURAÇÕES ---
+URL_POWER_BI = "https://powerbi.com"
 REMETENTE_EMAIL = "welliton.almeida@pizzattolog.com.br"
-REMETENTE_SENHA = os.environ.get("SENHA_EMAIL") # Puxa do cofre seguro do GitHub
+REMETENTE_SENHA = os.environ.get("SENHA_EMAIL") 
 
 DESTINATARIOS = [
     "Israel.joia@pizzattolog.com.br",
@@ -23,38 +22,39 @@ DESTINATARIOS = [
 ]
 
 def capturar_print_powerbi(url, caminho_saida):
-    print("🤖 [PLAYWRIGHT] Abrindo navegador virtual direto na nuvem...")
+    print("🤖 [DIAGNÓSTICO] Iniciando a rotina do Playwright...")
     try:
         with sync_playwright() as p:
+            # Abre o navegador Chromium de forma invisível (headless) compatível com a nuvem
+            print("⏳ [DIAGNÓSTICO] Abrindo navegador virtual...")
             browser = p.chromium.launch(headless=True)
-            context = browser.new_context(
-                viewport={"width": 1600, "height": 1000},
-                device_scale_factor=1.2 # Melhora a nitidez dos gráficos
-            )
+            
+            # Configura o tamanho da tela para o print não cortar o relatório
+            context = browser.new_context(viewport={"width": 1600, "height": 1000})
             page = context.new_page()
             
-            print("⏳ [PLAYWRIGHT] Acessando o link público do Power BI...")
+            print("⏳ [DIAGNÓSTICO] Acessando a URL do Power BI...")
             page.goto(url)
             
-            print("⏳ [PLAYWRIGHT] Aguardando 20 segundos para os gráficos carregarem na tela...")
-            page.wait_for_timeout(20000) 
+            print("⏳ [DIAGNÓSTICO] Aguardando 25 segundos para renderização completa dos gráficos...")
+            time.sleep(25)
             
-            # Tira o print e salva usando o caminho absoluto do servidor
-            page.screenshot(path=caminho_saida)
-            print(f"✅ [PLAYWRIGHT] Print tirado e salvo em: {caminho_saida}")
+            # Tira o print da tela inteira
+            page.screenshot(path=caminho_saida, full_page=True)
+            print(f"✅ [DIAGNÓSTICO] Print gravado com sucesso em: {caminho_saida}")
             
             browser.close()
             return True
             
     except Exception as e:
-        print("\n❌ [ERRO] Falha ao abrir o navegador ou capturar a tela do Power BI:")
+        print("\n❌ [ERRO CRÍTICO NO PLAYWRIGHT] Falha ao capturar a tela:")
         traceback.print_exc(file=sys.stdout)
         return False
 
 def enviar_email(caminho_imagem):
-    print("📧 [SMTP] Preparando o disparo do e-mail...")
+    print("📧 [DIAGNÓSTICO] Iniciando rotina de e-mail...")
     if not REMETENTE_SENHA:
-        print("❌ [ERRO DE AMBIENTE] A senha secreta não foi encontrada no GitHub Secrets!")
+        print("❌ [ERRO DE AMBIENTE] A chave 'SENHA_EMAIL' não foi mapeada no GitHub Secrets!")
         return
 
     try:
@@ -71,9 +71,9 @@ def enviar_email(caminho_imagem):
         <html>
         <body style="font-family: Arial, sans-serif;">
             <p>Olá,<br><br>
-               O relatório de abastecimento foi processado na nuvem.<br>
-               Confira abaixo o <b>Dashboard Salesco</b> atualizado direto do link público:<br><br>
-               Link do painel: <a href="{URL_POWER_BI}">Acessar Power BI Online</a><br><br>
+               O relatório de abastecimento foi processado.<br>
+               Confira abaixo o <b>Dashboard Salesco</b> atualizado:<br><br>
+               Acesse online: <a href="{URL_POWER_BI}">Clique Aqui</a><br><br>
                <img src="cid:{cid_id}" width="1000" style="border: 1px solid #ddd;"><br><br> 
                Atenciosamente,<br>
             </p>
@@ -82,38 +82,30 @@ def enviar_email(caminho_imagem):
         """
         msg_corpo.attach(MIMEText(corpo_html, 'html'))
 
-        # Abre o arquivo local do servidor do GITHUB usando o caminho fixado
-        print(f"⏳ [SMTP] Lendo o arquivo de print do disco da nuvem: {caminho_imagem}")
         with open(caminho_imagem, 'rb') as img_f:
             img = MIMEImage(img_f.read())
             img.add_header('Content-ID', f'<{cid_id}>')
             msg_corpo.attach(img)
 
-        print("⏳ [SMTP] Conectando com segurança aos servidores do Gmail...")
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        print("⏳ [DIAGNÓSTICO] Conectando ao servidor SMTP do Gmail...")
+        with smtplib.SMTP("://gmail.com", 587) as server:
             server.starttls()
             server.login(REMETENTE_EMAIL, REMETENTE_SENHA)
             server.sendmail(REMETENTE_EMAIL, DESTINATARIOS, msg.as_string())
         
-        print("🚀 [SUCESSO] E-mail enviado com o print online para todos!")
+        print("🚀 [SUCESSO] Relatório enviado por e-mail com sucesso!")
 
     except Exception as e:
-        print("\n❌ [ERRO] Falha no envio do e-mail via SMTP do Gmail:")
+        print("\n❌ [ERRO CRÍTICO NO E-MAIL] Falha ao enviar via SMTP:")
         traceback.print_exc(file=sys.stdout)
 
 if __name__ == "__main__":
-    print("🎬 Iniciando automação 100% Cloud e independente.")
-    
-    # Garante um caminho absoluto e idêntico para a criação e a leitura do arquivo na nuvem
-    pasta_do_script = os.path.dirname(os.path.abspath(__file__))
-    CAMINHO_DO_PRINT = os.path.join(pasta_do_script, "print_salesco_auto.png")
+    print("🎬 [DIAGNÓSTICO] Script iniciado na nuvem.")
+    pasta_atual = os.path.dirname(os.path.abspath(__file__))
+    CADA_PRINT = os.path.join(pasta_atual, "print_salesco_auto.png")
 
-    sucesso = capturar_print_powerbi(URL_POWER_BI, CAMINHO_DO_PRINT)
+    sucesso = capturar_print_powerbi(URL_POWER_BI, CADA_PRINT)
     if sucesso:
-        enviar_email(CAMINHO_DO_PRINT)
-        
-        # Deleta o arquivo temporário do servidor do GitHub após o envio
-        if os.path.exists(CAMINHO_DO_PRINT):
-            os.remove(CAMINHO_DO_PRINT)
+        enviar_email(CADA_PRINT)
     else:
-        print("🛑 Execução cancelada porque a captura online falhou.")
+        print("🛑 [INFO] Execução abortada devido à falha no print.")
