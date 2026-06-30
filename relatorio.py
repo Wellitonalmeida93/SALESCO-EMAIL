@@ -26,7 +26,8 @@ DESTINATARIOS = [
     "daniel.sacramento@pizzattolog.com.br",
     "lucas.justus@pizzattolog.com.br",
     "magdo.ferreira@pizzattolog.com.br",
-    "subcontratados@pizzattolog.com.br"
+    "subcontratados@pizzattolog.com.br",
+    "carlos.batista@pizzattolog.com.br"
 ]
 
 SMTP_SERVIDOR = "smtp.gmail.com"
