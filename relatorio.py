@@ -15,19 +15,30 @@ from playwright.sync_api import sync_playwright
 # CONFIGURAÇÕES
 # ==================================================
 
-URL_POWER_BI = "https://app.powerbi.com/view?r=eyJrIjoiZTg0YjIxMjgtYjJhOC00NDY5LWEzYjItNjM0M2IyZTgyMTExIiwidCI6ImY0Y2Q4NWNjLWQ1YTAtNGVmZC04NzkzLThhNzg5NDE5MGNmYSJ9&pageName=2307bfd0ca141332ad94"
+URL_POWER_BI = "https://app.powerbi.com/view?r=eyJrIjoiMjdhZmQ4MGMtNDM4NC00MDUyLWJjN2YtMDI4NDgwZjhiYzgwIiwidCI6ImY0Y2Q4NWNjLWQ1YTAtNGVmZC04NzkzLThhNzg5NDE5MGNmYSJ9&pageName=204706e0c37ceab79e87"
 
 REMETENTE_EMAIL = "welliton.almeida@pizzattolog.com.br"
 REMETENTE_SENHA = os.environ.get("SENHA_EMAIL")
 
+# Voltando à lista fixa antiga (Envia para todos)
 DESTINATARIOS = [
     "welliton.almeida@pizzattolog.com.br",
-    "Israel.joia@pizzattolog.com.br",
-    "daniel.sacramento@pizzattolog.com.br",
-    "lucas.justus@pizzattolog.com.br",
     "magdo.ferreira@pizzattolog.com.br",
-    "subcontratados@pizzattolog.com.br",
-    "carlos.batista@pizzattolog.com.br"
+    "alex.moreira@pizzattolog.com.br",
+    "lucas.justus@pizzattolog.com.br",
+    "diego.nascimento@pizzattolog.com.br",
+    "daiane.camilo@pizzattolog.com.br",
+    "carlos.batista@pizzattolog.com.br",
+    "fernando.sarzi@pizzattolog.com.br",
+    "julio.franca@pizzattolog.com.br",
+    "sandro.almeida@pizzattolog.com.br",
+    "anailson.moraes@pizzattolog.com.br",
+    "edemilson.gomes@pizzattolog.com.br",
+    "erick.tosin@pizzattolog.com.br",
+    "sabrina.marinho@pizzattolog.com.br",
+    "frota@pizzattolog.com.br",
+    "leandro.patricio@pizzattolog.com.br",
+    "tiago.alves@pizzattolog.com.br"
 ]
 
 SMTP_SERVIDOR = "smtp.gmail.com"
@@ -40,13 +51,11 @@ SMTP_PORTA = 587
 def capturar_print_powerbi(url, caminho_saida):
 
     print("=" * 60)
-    print("📸 INICIANDO CAPTURA DO POWER BI")
+    print("📸 INICIANDO CAPTURA DO POWER BI (MODO ANTIGO)")
     print("=" * 60)
 
     try:
-
         with sync_playwright() as p:
-
             browser = p.chromium.launch(
                 headless=True,
                 args=[
@@ -56,57 +65,29 @@ def capturar_print_powerbi(url, caminho_saida):
                 ]
             )
 
-            context = browser.new_context(
-                viewport={
-                    "width": 1920,
-                    "height": 1080
-                }
-            )
-
+            context = browser.new_context(viewport={"width": 1920, "height": 1080})
             page = context.new_page()
-
             page.set_default_timeout(120000)
 
             print("🌐 Abrindo dashboard...")
-
-            page.goto(
-                url,
-                wait_until="domcontentloaded",
-                timeout=120000
-            )
+            page.goto(url, wait_until="domcontentloaded", timeout=120000)
 
             print("⏳ Aguardando renderização dos gráficos...")
             time.sleep(60)
 
             print("📷 Capturando screenshot...")
-
-            page.screenshot(
-                path=caminho_saida,
-                full_page=True
-            )
-
+            page.screenshot(path=caminho_saida, full_page=True)
             browser.close()
 
             if not os.path.exists(caminho_saida):
                 print("❌ Screenshot não foi criada.")
                 return False
 
-            tamanho = os.path.getsize(caminho_saida)
-
-            print(f"✅ Screenshot criada.")
-            print(f"📦 Tamanho: {tamanho:,} bytes")
-
-            if tamanho < 10000:
-                print("⚠️ Screenshot muito pequena.")
-                return False
-
             return True
 
     except Exception:
-
         print("\n❌ ERRO AO CAPTURAR O POWER BI")
         traceback.print_exc(file=sys.stdout)
-
         return False
 
 
@@ -117,116 +98,63 @@ def capturar_print_powerbi(url, caminho_saida):
 def enviar_email(caminho_imagem):
 
     print("=" * 60)
-    print("📧 ENVIANDO E-MAIL")
+    print("📧 ENVIANDO E-MAIL PARA TODOS")
     print("=" * 60)
 
     try:
-
         if not REMETENTE_SENHA:
             print("❌ SENHA_EMAIL não encontrada.")
             return False
 
         msg = MIMEMultipart("related")
-
         msg["From"] = REMETENTE_EMAIL
         msg["To"] = ", ".join(DESTINATARIOS)
-        msg["Subject"] = f"Relatório Diário de Abastecimento Salesco - {datetime.now().strftime('%d/%m/%Y')}"
+        msg["Subject"] = f"Relatório Diário de Aprovações - {datetime.now().strftime('%d/%m/%Y')}"
 
-        cid_imagem = "dashboard_Salesco"
+        cid_imagem = "dashboard_Compras"
 
         html = f"""
-        <html>
-            <body style="font-family: Arial">
+<html>
+    <body style="font-family: Arial">
+        <h2>Dashboard Compras</h2>
+        <p>Prezados,</p>
+        <p>Segue aprovações pendentes para acompanhamento.</p>
+        <p>Acesse também o dashboard completo pelo link abaixo:</p>
+        <p><a href="{URL_POWER_BI}">Abrir Dashboard Online</a></p>
+        <br>
+        <img src="cid:{cid_imagem}" width="1200">
+        <br><br>
+        <p>Enviado automaticamente pelo GitHub Actions.</p>
+    </body>
+</html>
+"""
 
-                <h2>Dashboard Salesco</h2>
-
-                <p>
-                    Relatório atualizado automaticamente.
-                </p>
-
-                <p>
-                    <a href="{URL_POWER_BI}">
-                        Abrir Dashboard Online
-                    </a>
-                </p>
-
-                <br>
-
-                <img src="cid:{cid_imagem}" width="1200">
-
-                <br><br>
-
-                <p>
-                    Enviado automaticamente pelo GitHub Actions.
-                </p>
-
-            </body>
-        </html>
-        """
-
-        msg.attach(
-            MIMEText(
-                html,
-                "html",
-                "utf-8"
-            )
-        )
+        msg.attach(MIMEText(html, "html", "utf-8"))
 
         with open(caminho_imagem, "rb") as arquivo:
-
-            imagem = MIMEImage(
-                arquivo.read()
-            )
-
-            imagem.add_header(
-                "Content-ID",
-                f"<{cid_imagem}>"
-            )
-
-            imagem.add_header(
-                "Content-Disposition",
-                "inline",
-                filename="dashboard_Salesco.png"
-            )
-
+            imagem = MIMEImage(arquivo.read())
+            imagem.add_header("Content-ID", f"<{cid_imagem}>")
+            imagem.add_header("Content-Disposition", "inline", filename="dashboard_compras.png")
             msg.attach(imagem)
 
         print("📡 Conectando Gmail SMTP...")
-
-        with smtplib.SMTP(
-            SMTP_SERVIDOR,
-            SMTP_PORTA,
-            timeout=60
-        ) as server:
-
+        with smtplib.SMTP(SMTP_SERVIDOR, SMTP_PORTA, timeout=60) as server:
             server.ehlo()
             server.starttls()
             server.ehlo()
 
             print("🔑 Realizando login...")
-
-            server.login(
-                REMETENTE_EMAIL,
-                REMETENTE_SENHA
-            )
+            server.login(REMETENTE_EMAIL, REMETENTE_SENHA)
 
             print("📤 Enviando e-mail...")
-
-            server.sendmail(
-                REMETENTE_EMAIL,
-                DESTINATARIOS,
-                msg.as_string()
-            )
+            server.sendmail(REMETENTE_EMAIL, DESTINATARIOS, msg.as_string())
 
         print("✅ E-mail enviado com sucesso.")
-
         return True
 
     except Exception:
-
         print("\n❌ ERRO AO ENVIAR E-MAIL")
         traceback.print_exc(file=sys.stdout)
-
         return False
 
 
@@ -238,27 +166,16 @@ if __name__ == "__main__":
 
     print("🚀 INICIANDO PROCESSO")
 
-    pasta_script = os.path.dirname(
-        os.path.abspath(__file__)
-    )
+    pasta_script = os.path.dirname(os.path.abspath(__file__))
+    caminho_print = os.path.join(pasta_script, "print_compras_auto.png")
 
-    caminho_print = os.path.join(
-        pasta_script,
-        "print_compras_auto.png"
-    )
-
-    sucesso_print = capturar_print_powerbi(
-        URL_POWER_BI,
-        caminho_print
-    )
+    sucesso_print = capturar_print_powerbi(URL_POWER_BI, caminho_print)
 
     if not sucesso_print:
         print("🛑 Falha ao capturar dashboard.")
         sys.exit(1)
 
-    sucesso_email = enviar_email(
-        caminho_print
-    )
+    sucesso_email = enviar_email(caminho_print)
 
     if not sucesso_email:
         print("🛑 Falha ao enviar e-mail.")
