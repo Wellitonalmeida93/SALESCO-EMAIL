@@ -15,7 +15,7 @@ from playwright.sync_api import sync_playwright
 # CONFIGURAÇÕES
 # ==================================================
 
-URL_POWER_BI = "https://app.powerbi.com/view?r=eyJrIjoiZTg0YjIxMjgtYjJhOC00NDY5LWEzYjItNjM0M2IyZTgyMTExIiwidCI6ImY0Y2Q4NWNjLWQ1YTAtNGVmZC04NzkzLThhNzg5NDE5MGNmYSJ9&pageName=2307bfd0ca141332ad94"
+URL_POWER_BI = "https://app.powerbi.com/view?r=eyJrIjoiOWEwYmUzYWQtNzdmNy00YWUyLWI2ZmQtYmQ1Y2JiNWVmMDcxIiwidCI6ImY0Y2Q4NWNjLWQ1YTAtNGVmZC04NzkzLThhNzg5NDE5MGNmYSJ9&pageName=2307bfd0ca141332ad94"
 
 REMETENTE_EMAIL = "welliton.almeida@pizzattolog.com.br"
 REMETENTE_SENHA = os.environ.get("SENHA_EMAIL")
