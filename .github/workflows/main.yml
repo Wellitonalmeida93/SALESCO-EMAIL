@@ -3,7 +3,7 @@ name: Relatorio Diario Salesco
 on:
   schedule:
     # Minuto 0, Hora 11 (UTC), Qualquer dia, Qualquer mês, Segunda a Sexta (1-5)
-    - cron: '0 11 * * 1-5'
+    - cron: '0 6 * * 1-5'
 
   workflow_dispatch:
 
